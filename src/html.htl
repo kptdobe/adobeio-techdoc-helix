@@ -21,6 +21,7 @@
         </div>
         <div class="main">
             <div class="nav">
+                <!--  ${it.resource.nav}.summary.html -->
                 <esi:include src="${it.resource.nav}.summary.html" />
             </div>
             <div class="content">
