@@ -184,3 +184,11 @@ img {
     height: 38px;
     padding: 0px 8px;
 }
+
+ul li ul {
+    display: none;
+}
+
+.opened {
+    display: block;
+}

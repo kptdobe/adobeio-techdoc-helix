@@ -42,6 +42,25 @@
                 const lastMod = elem.getAttribute('datetime');
                 elem.innerHTML = moment(lastMod).fromNow();
                 parent.className +=  ' visible';
+
+                document.querySelectorAll('ul li ul').forEach(function(elem) {
+                    console.log('in for each', elem, elem.parentElement);
+                    elem.parentElement.addEventListener('click', function() {
+                        console.log('in event listent', elem.classList);
+                        if (!elem.classList.contains('opened')) {
+                            elem.classList.add('opened');
+                        } else {
+                            elem.classList.remove('opened');
+                        }
+                    });
+                });
+
+                document.querySelectorAll('ul li a').forEach(function(elem) {
+                    if (elem.href == window.location.href) {
+                        elem.parentElement.parentElement.classList.add('opened');
+                    }
+                });
+
             });
         </script>
     </body>
