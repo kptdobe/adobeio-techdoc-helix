@@ -59,6 +59,11 @@
                     if (elem.href == window.location.href) {
                         elem.parentElement.parentElement.classList.add('opened');
                     }
+
+                    elem.parentElement.addEventListener('click', function(ev) {
+                        console.log('clicking a');
+                        ev.stopPropagation();
+                    });
                 });
 
             });
