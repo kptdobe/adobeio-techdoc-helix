@@ -19,7 +19,7 @@
         </div>
         <div class="main">
             <div class="nav">
-                <div data-sly-test="${it.resource.nav}" data-sly-list="${it.resource.nav}">${item}</div>
+                <esi:include src="${it.resource.nav}.summary.html" />
             </div>
             <div class="content">
                 <div class="content-body">

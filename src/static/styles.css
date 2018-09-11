@@ -11,6 +11,10 @@ h1 {
     margin: 10px;
 }
 
+img {
+    max-width: 100%;
+}
+
 .header h1 img {
     height: 1em;
     padding-left: 20px;

@@ -1,5 +1,4 @@
-const request = require('request-promise');
-const { pipe } = require('@adobe/hypermedia-pipeline/src/defaults/html.pipe.js');
+const request = require('request-promise'); 
 
 /**
  * Removes the first title from the resource children
@@ -109,34 +108,6 @@ function extractLastModifiedFromCommitsHistory(commits, logger) {
 }
 
 /**
- * Returns that nav items based on the nav children
- * @param Array navChildren Children of the nav
- * @param {Object} logger Logger
- */
-function extractNav(navChildren, path, logger) {
-  logger.debug('html-pre.js - Extracting nav');
-
-  if (navChildren && navChildren.length > 0) {
-    let currentFolderPath = path.substring(0, path.lastIndexOf('/'));
-    let nav = navChildren;
-
-    // remove first title
-    if (nav && nav.length > 0) {
-      nav = nav.slice(1);
-    }
-    nav = nav.map(element => element
-      .replace(new RegExp('href="', 'g'), `href="${currentFolderPath}/`)
-      .replace(new RegExp('.md"', 'g'), '.html"'));
-
-    logger.debug('html-pre.js - Managed to collect some content for the nav');
-    return nav;
-  }
-
-  logger.debug('html-pre.js - Navigation payload has no children');
-  return [];
-}
-
-/**
  * Fetches the nav payload
  * @param String rawRoot Raw root url
  * @param String owner Owner
@@ -144,7 +115,7 @@ function extractNav(navChildren, path, logger) {
  * @param String ref Ref
  * @param {Object} logger Logger
  */
-async function fetchNavPayload(apiRoot, owner, repo, ref, path, logger) {
+async function computeNavPath(apiRoot, owner, repo, ref, path, logger) {
   logger.debug('html-pre.js - Fectching the nav');
 
   // fetch the whole tree...
@@ -180,24 +151,9 @@ async function fetchNavPayload(apiRoot, owner, repo, ref, path, logger) {
     currentFolderPath = currentFolderPath.substring(0, currentFolderPath.lastIndexOf('/'));
   }
 
+  summaryPath = summaryPath ? summaryPath.replace('.md', '') : '';
   logger.debug(`html-pre.js - Found SUMMARY.md to generate nav: ${summaryPath}`);
-  if ( summaryPath ) {
-    const params = {
-      owner,
-      repo,
-      ref,
-      path: summaryPath,
-    };
-
-    const res = await pipe(null, {}, { request: { params } });
-    res.summaryPath = summaryPath;
-    return res;
-  } 
-  return {
-    resource: {
-      children: []
-    }
-  };
+  return summaryPath;
 }
 
 // module.exports.pre is a function (taking next as an argument)
@@ -236,8 +192,8 @@ async function pre(payload, action) {
 
     // fetch and inject the nav
     if (secrets.REPO_RAW_ROOT) {
-      const navPayload =
-        await fetchNavPayload(
+      p.resource.nav =
+        await computeNavPath(
           secrets.REPO_API_ROOT,
           actionReq.params.owner,
           actionReq.params.repo,
@@ -245,7 +201,6 @@ async function pre(payload, action) {
           actionReq.params.path,
           logger,
         );
-      p.resource.nav = extractNav(navPayload.resource.children, navPayload.summaryPath, logger);
     } else {
       logger.debug('html-pre.js - No REPO_RAW_ROOT provided');
     }
