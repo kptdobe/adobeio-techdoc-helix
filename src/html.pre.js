@@ -113,10 +113,11 @@ function extractLastModifiedFromCommitsHistory(commits, logger) {
  * @param Array navChildren Children of the nav
  * @param {Object} logger Logger
  */
-function extractNav(navChildren, logger) {
+function extractNav(navChildren, path, logger) {
   logger.debug('html-pre.js - Extracting nav');
 
-  if (navChildren) {
+  if (navChildren && navChildren.length > 0) {
+    let currentFolderPath = path.substring(0, path.lastIndexOf('/'));
     let nav = navChildren;
 
     // remove first title
@@ -124,7 +125,7 @@ function extractNav(navChildren, logger) {
       nav = nav.slice(1);
     }
     nav = nav.map(element => element
-      .replace(new RegExp('href="', 'g'), 'href="/')
+      .replace(new RegExp('href="', 'g'), `href="${currentFolderPath}/`)
       .replace(new RegExp('.md"', 'g'), '.html"'));
 
     logger.debug('html-pre.js - Managed to collect some content for the nav');
@@ -143,17 +144,60 @@ function extractNav(navChildren, logger) {
  * @param String ref Ref
  * @param {Object} logger Logger
  */
-async function fetchNavPayload(owner, repo, ref, logger) {
+async function fetchNavPayload(apiRoot, owner, repo, ref, path, logger) {
   logger.debug('html-pre.js - Fectching the nav');
 
-  const params = {
-    owner,
-    repo,
-    ref,
-    path: 'SUMMARY.md',
+  // fetch the whole tree...
+  const options = {
+    uri:
+      `${apiRoot}` +
+      'repos/' +
+      `${owner}` +
+      '/' +
+      `${repo}` +
+      '/git/trees/' +
+      `${ref}` + 
+      '?recursive=1',
+    headers: {
+      'User-Agent': 'Request-Promise',
+    },
+    json: true,
   };
 
-  return pipe(null, {}, { request: { params }});
+  logger.debug(`html-pre.js - Fetching... ${options.uri}`);
+  const json = await request(options);
+
+  // ...to find the "closest" SUMMARY.md
+  let currentFolderPath = path.substring(0, path.lastIndexOf('/'));
+
+  let summaryPath;
+  while (!summaryPath && currentFolderPath.length > 0) {
+    json.tree.forEach(function(item) {
+      if ('/' + item.path == currentFolderPath + '/SUMMARY.md') {
+        summaryPath = '/' + item.path;
+      }
+    });
+    currentFolderPath = currentFolderPath.substring(0, currentFolderPath.lastIndexOf('/'));
+  }
+
+  logger.debug(`html-pre.js - Found SUMMARY.md to generate nav: ${summaryPath}`);
+  if ( summaryPath ) {
+    const params = {
+      owner,
+      repo,
+      ref,
+      path: summaryPath,
+    };
+
+    const res = await pipe(null, {}, { request: { params } });
+    res.summaryPath = summaryPath;
+    return res;
+  } 
+  return {
+    resource: {
+      children: []
+    }
+  };
 }
 
 // module.exports.pre is a function (taking next as an argument)
@@ -194,12 +238,14 @@ async function pre(payload, action) {
     if (secrets.REPO_RAW_ROOT) {
       const navPayload =
         await fetchNavPayload(
+          secrets.REPO_API_ROOT,
           actionReq.params.owner,
           actionReq.params.repo,
           actionReq.params.ref,
+          actionReq.params.path,
           logger,
         );
-      p.resource.nav = extractNav(navPayload.resource.children, logger);
+      p.resource.nav = extractNav(navPayload.resource.children, navPayload.summaryPath, logger);
     } else {
       logger.debug('html-pre.js - No REPO_RAW_ROOT provided');
     }
@@ -214,11 +260,3 @@ async function pre(payload, action) {
 }
 
 module.exports.pre = pre;
-
-// required only for testing
-module.exports.removeFirstTitle = removeFirstTitle;
-module.exports.fetchCommitsHistory = fetchCommitsHistory;
-module.exports.extractCommittersFromCommitsHistory = extractCommittersFromCommitsHistory;
-module.exports.extractLastModifiedFromCommitsHistory = extractLastModifiedFromCommitsHistory;
-module.exports.fetchNavPayload = fetchNavPayload;
-module.exports.extractNav = extractNav;
