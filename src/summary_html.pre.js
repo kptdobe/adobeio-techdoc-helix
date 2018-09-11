@@ -37,7 +37,7 @@ async function pre(payload, action) {
     const p = payload;
 
     // clean up the resource
-    p.resource.children = filterNav(p.resource.children, p.request.path, logger);
+    p.resource.children = filterNav(p.resource.children, action.request.params.path, logger);
 
     return p;
   } catch (e) {
