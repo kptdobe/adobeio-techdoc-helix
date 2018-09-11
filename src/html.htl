@@ -11,7 +11,9 @@
     <body>
         <div class="header">
             <div class="title">
-                <h1><img src="./static/adobe_logo.png"/>Launch, by Adobe, Documentation</h1>
+                <h1>
+                    <span class="menu-icon"></span>
+                    <img src="./static/adobe_logo.png" />Adobe IO Documentation</h1>
             </div>
             <div class="search">
                 <input type="text" value="" placeholder="Search" class="searchinput">
@@ -44,9 +46,7 @@
                 parent.className +=  ' visible';
 
                 document.querySelectorAll('ul li ul').forEach(function(elem) {
-                    console.log('in for each', elem, elem.parentElement);
                     elem.parentElement.addEventListener('click', function() {
-                        console.log('in event listent', elem.classList);
                         if (!elem.classList.contains('opened')) {
                             elem.classList.add('opened');
                         } else {
@@ -61,9 +61,20 @@
                     }
 
                     elem.parentElement.addEventListener('click', function(ev) {
-                        console.log('clicking a');
                         ev.stopPropagation();
                     });
+                });
+
+                document.querySelector('.menu-icon').addEventListener('click', function(ev) {
+                    const nav = document.querySelector('.nav');
+                    const content = document.querySelector('.content');
+                    if (!nav.classList.contains('opened')) {
+                            nav.classList.add('opened');
+                            content.classList.add('closed');
+                        } else {
+                            nav.classList.remove('opened');
+                            content.classList.remove('closed');
+                        }
                 });
 
             });
