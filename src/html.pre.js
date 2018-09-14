@@ -163,7 +163,7 @@ async function pre(payload, action) {
   const { logger, secrets, request: actionReq } = action;
 
   try {
-    if (!payload.resource) {
+    if (!payload.content) {
       logger.debug('html-pre.js - Payload has no resource, nothing we can do');
       return payload;
     }
@@ -171,11 +171,11 @@ async function pre(payload, action) {
     const p = payload;
 
     // clean up the resource
-    p.resource.children = removeFirstTitle(p.resource.children, logger);
+    p.content.children = removeFirstTitle(p.content.children, logger);
 
     // extract committers info and last modified based on commits history
     if (secrets.REPO_API_ROOT) {
-      p.resource.commits =
+      p.content.commits =
         await fetchCommitsHistory(
           secrets.REPO_API_ROOT,
           actionReq.params.owner,
@@ -184,15 +184,15 @@ async function pre(payload, action) {
           actionReq.params.path,
           logger,
         );
-      p.resource.committers = extractCommittersFromCommitsHistory(p.resource.commits, logger);
-      p.resource.lastModified = extractLastModifiedFromCommitsHistory(p.resource.commits, logger);
+      p.content.committers = extractCommittersFromCommitsHistory(p.content.commits, logger);
+      p.content.lastModified = extractLastModifiedFromCommitsHistory(p.content.commits, logger);
     } else {
       logger.debug('html-pre.js - No REPO_API_ROOT provided');
     }
 
     // fetch and inject the nav
     if (secrets.REPO_RAW_ROOT) {
-      p.resource.nav =
+      p.content.nav =
         await computeNavPath(
           secrets.REPO_API_ROOT,
           actionReq.params.owner,

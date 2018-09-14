@@ -5,7 +5,7 @@
       <link rel="stylesheet" href="./static/styles.css"/>
       <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,500,700"/>
       <script src="https://momentjs.com/downloads/moment.min.js"></script>
-      <title>${it.resource.title}</title>
+      <title>${payload.content.title}</title>
     </head>
 
     <body>
@@ -21,19 +21,19 @@
         </div>
         <div class="main">
             <div class="nav">
-                <!--  ${it.resource.nav}.summary.html -->
-                <esi:include src="${it.resource.nav}.summary.html" />
+                <!--  ${payload.content.nav}.summary.html -->
+                <esi:include src="${payload.content.nav}.summary.html" />
             </div>
             <div class="content">
                 <div class="content-body">
                     <div class="title">
-                        <h1>${it.resource.title}</h1>
-                        <div data-sly-test="${it.resource.committers && it.resource.lastModified}" class="author">
-                            <sly data-sly-list="${it.resource.committers}"><img title="${item.display}" src="${item.avatar_url}"></sly>
-                            <span class="lastModified">Last modified <time datetime="${it.resource.lastModified.raw}">${it.resource.lastModified.display}</time></span>
+                        <h1>${payload.content.title}</h1>
+                        <div data-sly-test="${payload.content.committers && payload.content.lastModified}" class="author">
+                            <sly data-sly-list="${payload.content.committers}"><img title="${item.display}" src="${item.avatar_url}"></sly>
+                            <span class="lastModified">Last modified <time datetime="${payload.content.lastModified.raw}">${payload.content.lastModified.display}</time></span>
                         </div>
                     </div>
-                    <div data-sly-list="${it.resource.children}">${item}</div>
+                    <div data-sly-list="${payload.content.children}">${item}</div>
                 </div>
             </div>
         </div>

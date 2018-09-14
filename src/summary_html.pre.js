@@ -29,7 +29,7 @@ async function pre(payload, action) {
   const { logger } = action;
 
   try {
-    if (!payload.resource) {
+    if (!payload.content) {
       logger.debug('html-pre.js - Payload has no resource, nothing we can do');
       return payload;
     }
@@ -37,7 +37,7 @@ async function pre(payload, action) {
     const p = payload;
 
     // clean up the resource
-    p.resource.children = filterNav(p.resource.children, action.request.params.path, logger);
+    p.content.children = filterNav(p.content.children, action.request.params.path, logger);
 
     return p;
   } catch (e) {
